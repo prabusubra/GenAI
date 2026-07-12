@@ -1,10 +1,15 @@
 import logging
 
+from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException
 
 from packages.schemas.models import AnalyzeRequest, RCAReport
 from services.agent.llm_explainer import LLMConfigurationError, enrich_report
 from services.rca_engine.analyzer import analyze_events
+
+# Load local development settings without overwriting variables supplied by the
+# shell, container, or deployment platform.
+load_dotenv()
 
 app = FastAPI(
     title="RCA Copilot",

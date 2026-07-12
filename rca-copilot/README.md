@@ -71,6 +71,8 @@ export LLM_PROVIDER=ollama
 ```
 
 Keep real keys in your shell, secret manager, or an untracked `.env` file.
+The API automatically loads `.env` when it starts; shell variables take
+precedence over values in that file.
 
 The next increment is to add OpenTelemetry metrics/traces and connector
 adapters, then have an AI model explain only the retrieved evidence.
