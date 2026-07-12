@@ -1,0 +1,46 @@
+{
+  "events": [
+    {
+      "timestamp": "2026-07-11T09:00:01Z",
+      "service": "checkout-api",
+      "level": "INFO",
+      "message": "Checkout request accepted",
+      "trace_id": "a8f0c001"
+    },
+    {
+      "timestamp": "2026-07-11T09:00:03Z",
+      "service": "checkout-api",
+      "level": "ERROR",
+      "message": "Payment gateway request failed for order 1021",
+      "exception": "GatewayTimeout: upstream timed out",
+      "trace_id": "a8f0c001",
+      "deployment_version": "2026.07.11.1"
+    },
+    {
+      "timestamp": "2026-07-11T09:01:12Z",
+      "service": "checkout-api",
+      "level": "ERROR",
+      "message": "Payment gateway request failed for order 1022",
+      "exception": "GatewayTimeout: upstream timed out",
+      "trace_id": "a8f0c002",
+      "deployment_version": "2026.07.11.1"
+    },
+    {
+      "timestamp": "2026-07-11T09:02:45Z",
+      "service": "checkout-api",
+      "level": "ERROR",
+      "message": "Payment gateway request failed for order 1023",
+      "exception": "GatewayTimeout: upstream timed out",
+      "trace_id": "a8f0c003",
+      "deployment_version": "2026.07.11.1"
+    },
+    {
+      "timestamp": "2026-07-11T09:03:00Z",
+      "service": "inventory-api",
+      "level": "ERROR",
+      "message": "Inventory cache miss",
+      "exception": "CacheMiss: product not found",
+      "trace_id": "b9f0c001"
+    }
+  ]
+}
