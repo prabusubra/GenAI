@@ -1,0 +1,1221 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Expense Copilot</title>
+<style>
+  :root {
+    color-scheme: light;
+    --page: #f9f9f7;
+    --surface: #fcfcfb;
+    --ink: #0b0b0b;
+    --ink-2: #52514e;
+    --muted: #898781;
+    --grid: #e1e0d9;
+    --axis: #c3c2b7;
+    --border: rgba(11, 11, 11, 0.10);
+    --accent: #2a78d6;
+    --income: #2a78d6;
+    --spending: #eb6834;
+    --category: #2a78d6;
+    --category-dim: #b7d3f6;
+    --good: #0ca30c;
+    --good-text: #006300;
+    --critical: #d03b3b;
+    --critical-text: #b42323;
+    --warning: #fab219;
+    --wash: rgba(42, 120, 214, 0.08);
+    --c1: #2a78d6; --c2: #eb6834; --c3: #1baf7a; --c4: #eda100; --c5: #e87ba4; --c6: #008300; --c7: #4a3aa7; --c8: #e34948; --c-other: #a8a69e;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      color-scheme: dark;
+      --page: #0d0d0d; --surface: #1a1a19; --ink: #ffffff; --ink-2: #c3c2b7; --grid: #2c2c2a; --axis: #383835;
+      --border: rgba(255, 255, 255, 0.10); --accent: #3987e5; --income: #3987e5; --spending: #d95926;
+      --category: #3987e5; --category-dim: #184f95; --good-text: #0ca30c; --critical-text: #e66767; --wash: rgba(57, 135, 229, 0.14);
+      --c1: #3987e5; --c2: #d95926; --c3: #199e70; --c4: #c98500; --c5: #d55181; --c6: #008300; --c7: #9085e9; --c8: #e66767; --c-other: #6b6a65;
+    }
+  }
+  :root[data-theme="dark"] {
+    color-scheme: dark;
+    --page: #0d0d0d; --surface: #1a1a19; --ink: #ffffff; --ink-2: #c3c2b7; --grid: #2c2c2a; --axis: #383835;
+    --border: rgba(255, 255, 255, 0.10); --accent: #3987e5; --income: #3987e5; --spending: #d95926;
+    --category: #3987e5; --category-dim: #184f95; --good-text: #0ca30c; --critical-text: #e66767; --wash: rgba(57, 135, 229, 0.14);
+    --c1: #3987e5; --c2: #d95926; --c3: #199e70; --c4: #c98500; --c5: #d55181; --c6: #008300; --c7: #9085e9; --c8: #e66767; --c-other: #6b6a65;
+  }
+
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--page); color: var(--ink); font: 15px/1.45 system-ui, -apple-system, "Segoe UI", sans-serif; }
+  main { max-width: 1040px; margin: 0 auto; padding: 32px 16px 64px; }
+  h1 { font-size: 24px; margin: 0 0 4px; }
+  h2 { font-size: 16px; margin: 0; }
+  .sub { color: var(--ink-2); margin: 0; }
+  .muted { color: var(--muted); }
+
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 20px; }
+  .card-head { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; flex-wrap: wrap; margin-bottom: 12px; }
+  .card-head p { margin: 0; color: var(--ink-2); font-size: 13px; }
+  .section { margin-bottom: 16px; }
+
+  /* upload */
+  #upload { margin: 20px 0 24px; border: 1.5px dashed var(--axis); }
+  #upload.drag { border-color: var(--accent); background: var(--wash); }
+  .upload-row { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+  .upload-row .hint { flex: 1; min-width: 200px; color: var(--ink-2); }
+  button, .file-btn { font: inherit; border-radius: 8px; padding: 9px 16px; cursor: pointer; border: 1px solid var(--border); }
+  .file-btn { background: var(--surface); color: var(--ink); }
+  button.primary { background: var(--accent); color: #fff; border-color: transparent; font-weight: 600; }
+  button.ghost { background: transparent; color: var(--ink-2); padding: 4px 8px; }
+  button:disabled { opacity: .55; cursor: default; }
+  input[type=file] { position: absolute; width: 1px; height: 1px; opacity: 0; }
+  .file-btn:focus-within { outline: 2px solid var(--accent); outline-offset: 2px; }
+  #file-list { list-style: none; margin: 14px 0 0; padding: 0; }
+  #file-list:empty { display: none; }
+  #file-list li { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr) 120px 150px auto; gap: 10px; align-items: center; padding: 8px 0; border-top: 1px solid var(--grid); }
+  .own-details { margin-top: 14px; border-top: 1px solid var(--grid); padding-top: 12px; }
+  .own-details summary { cursor: pointer; font-size: 14px; color: var(--ink-2); }
+  .own-details .fields { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 10px; }
+  .own-details label { display: block; font-size: 13px; color: var(--ink-2); }
+  .own-details label input { margin-top: 4px; }
+  .own-details p { margin: 8px 0 0; font-size: 12px; color: var(--muted); }
+  .acct-no { display: block; font-size: 12px; color: var(--muted); }
+  #file-list .fname { overflow-wrap: anywhere; font-size: 14px; }
+  #file-list .fname small { color: var(--muted); margin-left: 6px; }
+  input[type=text], select { font: inherit; padding: 6px 10px; border-radius: 8px; border: 1px solid var(--border); background: var(--surface); color: var(--ink); min-width: 0; }
+  input[type=text] { width: 100%; }
+
+  .notice { border-left: 4px solid var(--critical); padding: 12px 16px; background: var(--surface); border-radius: 8px; margin-bottom: 16px; }
+  .notice.error::before { content: "⚠ "; color: var(--critical); font-weight: 700; }
+  .notice.warn { border-left-color: var(--warning); }
+  .notice.warn ul { margin: 4px 0 0; padding-left: 20px; }
+  [hidden] { display: none !important; }
+  dialog#review { border: 1px solid var(--border); border-radius: 12px; padding: 0; width: min(760px, calc(100vw - 32px)); max-height: calc(100vh - 48px);
+                  background: var(--surface); color: var(--ink); box-shadow: 0 20px 60px rgba(0,0,0,.25); }
+  dialog#review::backdrop { background: rgba(0,0,0,.45); }
+  #review form { display: flex; flex-direction: column; max-height: calc(100vh - 48px); }
+  #review header, #review footer { padding: 16px 20px; }
+  #review header h2 { margin-bottom: 4px; }
+  #review header p { margin: 0; color: var(--ink-2); font-size: 14px; }
+  #review .review-body { overflow: auto; padding: 0 20px; border-top: 1px solid var(--grid); border-bottom: 1px solid var(--grid); }
+  #review footer { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
+  #review footer .quick { display: flex; gap: 8px; }
+  #review footer .quick button, #review footer .actions button:not(.primary) { background: var(--surface); color: var(--ink); }
+  #review footer .actions { display: flex; gap: 8px; }
+  #review td { vertical-align: middle; }
+  #review tr.out td:not(:first-child) { color: var(--muted); text-decoration: line-through; text-decoration-color: var(--muted); }
+  #review input[type=checkbox] { width: 18px; height: 18px; accent-color: var(--accent); }
+  .review-summary { font-size: 13px; color: var(--ink-2); }
+  .tx-tools { display: flex; align-items: center; gap: 8px 14px; flex-wrap: wrap; margin: -4px 0 10px; font-size: 13px; color: var(--ink-2); }
+  .tx-tools button { font: inherit; font-size: 13px; padding: 4px 10px; border-radius: 8px; border: 1px solid var(--border); background: var(--surface); color: var(--ink); cursor: pointer; }
+  .tx-tools .changes { margin-left: auto; }
+  #tx-table th.inc, #tx-table td.inc { width: 34px; text-align: center; padding-left: 4px; padding-right: 4px; }
+  #tx-table td.inc input { width: 17px; height: 17px; accent-color: var(--accent); cursor: pointer; vertical-align: middle; }
+  #tx-table tr.left-out td:not(.inc) { color: var(--muted); }
+  .link-btn { font: inherit; font-size: 14px; border: 0; background: none; color: var(--accent); padding: 0; cursor: pointer; text-decoration: underline; }
+
+  .period { margin: 0 0 12px; color: var(--ink-2); }
+  .tiles { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 16px; }
+  .tile .label { font-size: 13px; color: var(--ink-2); }
+  .tile .value { font-size: 26px; font-weight: 600; margin-top: 2px; }
+  .tile .note { font-size: 13px; margin-top: 2px; }
+  .key { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 6px; vertical-align: 0; }
+  .status-good { color: var(--good-text); font-weight: 600; }
+  .status-bad { color: var(--critical-text); font-weight: 600; }
+
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
+  .stack > * + * { margin-top: 16px; }
+  .chart { width: 100%; position: relative; }
+  .chart svg { display: block; width: 100%; overflow: visible; }
+  .chart text { font: 12px system-ui, -apple-system, "Segoe UI", sans-serif; fill: var(--ink-2); }
+  .chart .tick { fill: var(--muted); font-variant-numeric: tabular-nums; }
+  .chart .val { fill: var(--ink); font-weight: 600; }
+  .chart .hit { fill: transparent; cursor: pointer; }
+  .chart .row:hover .hit, .chart .row.active .hit { fill: var(--wash); }
+  .legend { display: flex; gap: 16px; font-size: 13px; color: var(--ink-2); margin-bottom: 6px; }
+
+  .tabs { display: inline-flex; border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+  .tabs button { border: 0; border-radius: 0; background: transparent; color: var(--ink-2); padding: 6px 12px; font-size: 13px; }
+  .tabs button[aria-selected="true"] { background: var(--wash); color: var(--ink); font-weight: 600; }
+
+  #tip { position: fixed; pointer-events: none; z-index: 10; background: var(--surface); color: var(--ink); border: 1px solid var(--border);
+         box-shadow: 0 6px 20px rgba(0,0,0,.12); border-radius: 8px; padding: 8px 10px; font-size: 13px; min-width: 160px; opacity: 0; transition: opacity .08s; }
+  #tip .t-title { font-weight: 600; margin-bottom: 4px; }
+  #tip .t-sub { color: var(--ink-2); margin: -2px 0 4px; }
+  #tip .t-row { display: flex; justify-content: space-between; gap: 16px; font-variant-numeric: tabular-nums; }
+
+  .filters { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  .table-wrap { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  th { text-align: left; font-weight: 600; color: var(--ink-2); font-size: 12px; text-transform: uppercase; letter-spacing: .03em; padding: 8px; border-bottom: 1px solid var(--axis); }
+  td { padding: 8px; border-bottom: 1px solid var(--grid); vertical-align: top; }
+  td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  td.date { white-space: nowrap; color: var(--ink-2); }
+  .credit { color: var(--good-text); }
+  td.excluded-amt { color: var(--muted); text-decoration: line-through; text-decoration-color: var(--muted); }
+  #tx-table tfoot td { border-bottom: 0; padding-top: 6px; padding-bottom: 6px; }
+  #tx-table tfoot tr:first-child td { border-top: 2px solid var(--axis); padding-top: 10px; }
+  .net-row td { font-size: 15px; }
+  .chip { display: inline-block; font-size: 12px; padding: 1px 8px; border-radius: 999px; background: var(--wash); color: var(--ink-2); white-space: nowrap; }
+  .chip.internal { background: transparent; border: 1px dashed var(--axis); }
+  .place { font-size: 13px; color: var(--ink-2); white-space: nowrap; }
+  tr.clickable { cursor: pointer; }
+  tr.clickable:hover td { background: var(--wash); }
+  tr.selected td { background: var(--wash); font-weight: 600; }
+  tr.internal td { color: var(--muted); }
+  .pair-note { display: block; font-size: 12px; color: var(--muted); margin-top: 2px; }
+  tr.day-head td { background: var(--page); font-size: 13px; font-weight: 600; padding: 10px 8px 6px; border-bottom: 1px solid var(--axis); }
+  tr.day-head .day-sum { float: right; font-weight: 400; color: var(--ink-2); font-variant-numeric: tabular-nums; }
+  tbody tr.day-head:not(:first-child) td { border-top: 8px solid var(--surface); }
+  .bar-cell { width: 26%; }
+  .mini-bar { height: 8px; border-radius: 0 4px 4px 0; background: var(--category); }
+  .insights { margin: 0; padding-left: 20px; }
+  .insights li + li { margin-top: 4px; }
+  .date-stats { display: flex; gap: 8px 24px; flex-wrap: wrap; margin: 0 0 12px; font-size: 13px; color: var(--ink-2); }
+  .date-stats strong { color: var(--ink); }
+  .scroll-table { max-height: 340px; overflow: auto; margin-top: 12px; border-top: 1px solid var(--grid); }
+  .scroll-table thead th { position: sticky; top: 0; background: var(--surface); z-index: 1; }
+  #date-legend { flex-wrap: wrap; gap: 6px 14px; }
+  .base-strip { display: flex; flex-wrap: wrap; gap: 8px 22px; padding: 10px 12px; margin: 0 0 12px; border-radius: 8px; background: var(--page); font-size: 13px; color: var(--ink-2); }
+  .base-strip strong { color: var(--ink); font-size: 15px; }
+  .base-strip .incomes { flex-basis: 100%; }
+  .income-mark { color: var(--income); font-weight: 700; }
+  .sub-head { display: flex; justify-content: space-between; align-items: baseline; margin: 22px 0 6px; padding-top: 14px; border-top: 1px solid var(--grid); }
+  .sub-head h3 { font-size: 14px; margin: 0; }
+  #date-table tr.income-row td { color: var(--ink-2); }
+  #date-table td.exp-cat { white-space: nowrap; }
+  #date-table tr.day-head td { position: static; }
+  .filter-chip { font-size: 13px; padding: 4px 10px; border-radius: 999px; background: var(--wash); color: var(--ink); border: 1px solid var(--border); }
+
+  @media (max-width: 760px) {
+    .tiles { grid-template-columns: 1fr 1fr; }
+    .grid-2 { grid-template-columns: 1fr; }
+    .bar-cell, .hide-sm { display: none; }
+    .tile .value { font-size: 22px; }
+    #file-list li { grid-template-columns: 1fr 1fr auto; }
+    #file-list li .fname { grid-column: 1 / 3; }
+    #file-list li input[data-index] { grid-column: 1; grid-row: 2; }
+    #file-list li input[data-number] { grid-column: 2; grid-row: 2; }
+    #file-list li input[data-opening] { grid-column: 1 / 3; grid-row: 3; }
+    .own-details .fields { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+<main>
+  <h1>Expense Copilot</h1>
+  <p class="sub">Analyze statements from all your bank accounts together: CSV, JSON, or PDF. Files are analyzed in memory and never saved.</p>
+
+  <form id="upload" class="card">
+    <div class="upload-row">
+      <label class="file-btn">Add statements<input type="file" id="file" accept=".csv,.json,.pdf" multiple></label>
+      <span class="hint" id="hint">…or drop files here. Add one or more statements per bank account.</span>
+      <button class="primary" id="analyze" disabled>Analyze</button>
+    </div>
+    <ul id="file-list" aria-label="Selected statements"></ul>
+    <details class="own-details" id="own-details">
+      <summary>Your own accounts (optional): so transfers between them aren't counted as income or spending</summary>
+      <div class="fields">
+        <label>Your name as banks print it on transfers
+          <input type="text" id="owner-names" placeholder="e.g. PRABU S, PRABU SUBRAMANIAN" autocomplete="off"></label>
+        <label>Your other accounts (no statement uploaded)
+          <input type="text" id="other-accounts" placeholder="last 4 digits, e.g. 9876, 4410" autocomplete="off" inputmode="numeric"></label>
+      </div>
+      <p>Account numbers are read from PDF statements automatically; type one next to a file if it isn't. Transfers mentioning
+        any of your accounts, your name, or "SELF" are left out. Salary, interest, refunds and shop payments always count.</p>
+    </details>
+  </form>
+
+  <div class="notice error" id="error" role="alert" hidden></div>
+  <div class="notice warn" id="warnings" hidden></div>
+
+  <section id="report" hidden>
+    <p class="period"><span id="period"></span> <button type="button" class="link-btn" id="review-large" hidden></button></p>
+    <div class="tiles" id="tiles"></div>
+
+    <div class="card section" id="accounts-card">
+      <div class="card-head"><h2>Accounts</h2><p id="transfer-note"></p></div>
+      <div class="legend"><span><span class="key" style="background:var(--income)"></span>Income</span><span><span class="key" style="background:var(--spending)"></span>Spending</span></div>
+      <div class="chart" id="chart-accounts"></div>
+      <div class="table-wrap" style="margin-top:12px"><table id="account-table"></table></div>
+    </div>
+
+    <div class="card section">
+      <div class="card-head"><h2>Cumulative income and spending</h2><p id="trend-note">Where the lines cross, spending overtakes income</p></div>
+      <div class="legend"><span><span class="key" style="background:var(--income)"></span><span id="trend-income-label">Income</span></span><span><span class="key" style="background:var(--spending)"></span>Spending</span></div>
+      <div class="chart" id="chart-trend"></div>
+    </div>
+
+    <div class="card section" id="dates-card">
+      <div class="card-head">
+        <h2>Spending by date</h2>
+        <div class="tabs" role="tablist" id="date-tabs">
+          <button type="button" role="tab" data-level="day" aria-selected="true">Day</button>
+          <button type="button" role="tab" data-level="week" aria-selected="false">Week</button>
+          <button type="button" role="tab" data-level="month" aria-selected="false">Month</button>
+        </div>
+      </div>
+      <div class="base-strip" id="date-base"></div>
+      <div class="date-stats" id="date-stats"></div>
+      <div class="legend" id="date-legend"></div>
+      <div class="chart" id="chart-dates"></div>
+      <div class="sub-head">
+        <h3>Spending days, largest first</h3>
+        <button type="button" class="link-btn" id="ranked-toggle" hidden></button>
+      </div>
+      <div class="chart" id="chart-ranked"></div>
+      <div class="scroll-table table-wrap"><table id="date-table"></table></div>
+    </div>
+
+    <div class="card section">
+      <div class="card-head"><h2>Spending by category</h2><p>Click a category to see its transactions</p></div>
+      <div class="chart" id="chart-categories"></div>
+    </div>
+
+    <div class="card section">
+      <div class="card-head">
+        <h2>Spending by location</h2>
+        <div class="tabs" role="tablist" id="location-tabs">
+          <button type="button" role="tab" data-level="state" aria-selected="true">State</button>
+          <button type="button" role="tab" data-level="place" aria-selected="false">City, town &amp; village</button>
+        </div>
+      </div>
+      <p class="muted" style="margin:0 0 10px;font-size:13px" id="location-note"></p>
+      <div class="chart" id="chart-locations"></div>
+    </div>
+
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-head"><h2>Category breakdown</h2></div>
+        <div class="table-wrap"><table id="category-table"></table></div>
+      </div>
+      <div class="stack">
+        <div class="card">
+          <div class="card-head"><h2>Income sources</h2></div>
+          <div class="table-wrap"><table id="income-table"></table></div>
+        </div>
+        <div class="card">
+          <div class="card-head"><h2>Insights</h2></div>
+          <ul class="insights" id="insights"></ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" id="transactions-card">
+      <div class="card-head">
+        <h2>Transactions</h2>
+        <div class="filters">
+          <button type="button" class="filter-chip" id="date-chip" hidden></button>
+          <select id="filter-direction" aria-label="Money in or out">
+            <option value="all">Money in &amp; out</option>
+            <option value="in">Money in only</option>
+            <option value="out">Money out only</option>
+          </select>
+          <select id="sort-order" aria-label="Order">
+            <option value="asc">Oldest first</option>
+            <option value="desc">Newest first</option>
+          </select>
+          <select id="filter-account" aria-label="Account"></select>
+          <select id="filter-category" aria-label="Category"></select>
+          <select id="filter-location" aria-label="Location"></select>
+        </div>
+      </div>
+      <div class="tx-tools" id="tx-tools">
+        <span>Tick to count a transaction, untick to leave it out of the analysis.</span>
+        <button type="button" id="count-shown">Count all shown</button>
+        <button type="button" id="leave-shown">Leave out all shown</button>
+        <span class="changes" id="tx-changes" aria-live="polite"></span>
+      </div>
+      <div class="table-wrap"><table id="tx-table"></table></div>
+    </div>
+  </section>
+</main>
+<div id="tip" role="tooltip"></div>
+<dialog id="review" aria-labelledby="review-title">
+  <form method="dialog">
+    <header>
+      <h2 id="review-title">Large transactions</h2>
+      <p id="review-intro"></p>
+    </header>
+    <div class="review-body"><table id="review-table"></table></div>
+    <footer>
+      <div class="quick">
+        <button type="button" id="review-all">Include all</button>
+        <button type="button" id="review-none">Leave all out</button>
+      </div>
+      <span class="review-summary" id="review-summary"></span>
+      <div class="actions">
+        <button value="cancel" formnovalidate>Cancel</button>
+        <button value="ok" class="primary" id="review-ok">Continue</button>
+      </div>
+    </footer>
+  </form>
+</dialog>
+
+<script>
+const $ = (selector) => document.querySelector(selector);
+const SVG = "http://www.w3.org/2000/svg";
+const MIN_CHART_WIDTH = 160;
+const state = { report: null, files: [], account: "all", category: "all", location: "all", locationLevel: "state", dateLevel: "day", dateRange: null, sortOrder: "asc", direction: "all", excludedIds: new Set(), includedIds: new Set(), rankedAll: false };
+const LARGE_AMOUNT = 50000;  // ask before including any single transaction above this (money in or out)
+let money = new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR" });
+const compact = new Intl.NumberFormat("en-IN", { notation: "compact", maximumFractionDigits: 1 });
+const dateFmt = new Intl.DateTimeFormat("en-IN", { day: "numeric", month: "short", year: "numeric", timeZone: "UTC" });
+const shortDate = new Intl.DateTimeFormat("en-IN", { day: "numeric", month: "short", timeZone: "UTC" });
+const toDate = (iso) => new Date(iso + "T00:00:00Z");
+const esc = (text) => String(text ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const num = (value) => Number(value);
+const plural = (n, word) => `${n} ${word}${n === 1 ? "" : "s"}`;
+
+function el(tag, attrs = {}, parent) {
+  const node = document.createElementNS(SVG, tag);
+  for (const [key, value] of Object.entries(attrs)) node.setAttribute(key, value);
+  if (parent) parent.appendChild(node);
+  return node;
+}
+
+/* ---------- tooltip ---------- */
+const tip = $("#tip");
+function showTip(event, html) {
+  tip.innerHTML = html;
+  tip.style.opacity = 1;
+  const pad = 14, rect = tip.getBoundingClientRect();
+  let x = event.clientX + pad, y = event.clientY + pad;
+  if (x + rect.width > innerWidth - 8) x = event.clientX - rect.width - pad;
+  if (y + rect.height > innerHeight - 8) y = event.clientY - rect.height - pad;
+  tip.style.left = x + "px"; tip.style.top = y + "px";
+}
+const hideTip = () => { tip.style.opacity = 0; };
+const tipRow = (label, value, color) =>
+  `<div class="t-row"><span>${color ? `<span class="key" style="background:${color}"></span>` : ""}${esc(label)}</span><strong>${esc(value)}</strong></div>`;
+
+/* ---------- horizontal bar chart ---------- */
+// Bars: <=24px thick, square at the baseline, 4px rounded data end.
+function barPath(x0, y, length, h) {
+  const r = Math.min(4, length / 2, h / 2);
+  if (length <= 0) return "";
+  return `M${x0},${y} H${x0 + length - r} Q${x0 + length},${y} ${x0 + length},${y + r} V${y + h - r} Q${x0 + length},${y + h} ${x0 + length - r},${y + h} H${x0} Z`;
+}
+
+function barChart(container, items, { rowHeight = 36, barHeight = 20, labelWidth = 150, valueWidth = 150, onClick, active } = {}) {
+  container.innerHTML = "";
+  if (!items.length) { container.innerHTML = `<p class="muted" style="margin:0">Nothing to show.</p>`; return; }
+  const width = container.clientWidth;
+  if (width < MIN_CHART_WIDTH) return;  // hidden or not laid out yet; redrawn on resize
+  const labelW = Math.min(labelWidth, width * 0.38);
+  const valueW = Math.min(valueWidth, width * 0.45);
+  const plotW = Math.max(40, width - labelW - valueW - 8);
+  const max = Math.max(...items.map((item) => item.value), 1);
+  const svg = el("svg", { width, height: items.length * rowHeight + 4, role: "img" }, container);
+  el("line", { x1: labelW, x2: labelW, y1: 0, y2: items.length * rowHeight, stroke: "var(--axis)", "stroke-width": 1 }, svg);
+  items.forEach((item, index) => {
+    const y = index * rowHeight;
+    const g = el("g", { class: "row" + (active && active === item.key ? " active" : "") }, svg);
+    el("rect", { class: "hit", x: 0, y, width, height: rowHeight, rx: 6 }, g);
+    const label = el("text", { x: labelW - 10, y: y + rowHeight / 2 + 4, "text-anchor": "end" }, g);
+    label.textContent = item.label.length > 22 ? item.label.slice(0, 21) + "…" : item.label;
+    const length = (item.value / max) * plotW;
+    el("path", { d: barPath(labelW, y + (rowHeight - barHeight) / 2, length, barHeight), fill: item.color }, g);
+    const value = el("text", { x: labelW + length + 8, y: y + rowHeight / 2 + 4, class: "val" }, g);
+    value.textContent = item.valueLabel;
+    if (item.extra) { const extra = el("tspan", { class: "tick", dx: 6 }, value); extra.textContent = item.extra; }
+    g.addEventListener("mousemove", (event) => showTip(event, item.tip));
+    g.addEventListener("mouseleave", hideTip);
+    if (onClick) g.addEventListener("click", () => onClick(item));
+  });
+}
+
+/* Two bars per row (income over spending), separated by a 2px surface gap. */
+function pairedBarChart(container, groups, onClick) {
+  container.innerHTML = "";
+  if (container.clientWidth < MIN_CHART_WIDTH) return;
+  const width = container.clientWidth, barH = 16, gap = 2, rowH = barH * 2 + gap + 18;
+  const labelW = Math.min(160, width * 0.38), valueW = Math.min(150, width * 0.3), plotW = Math.max(40, width - labelW - valueW - 8);
+  const max = Math.max(...groups.flatMap((g) => [g.income, g.spending]), 1);
+  const svg = el("svg", { width, height: groups.length * rowH, role: "img", "aria-label": "Income and spending per account" }, container);
+  el("line", { x1: labelW, x2: labelW, y1: 0, y2: groups.length * rowH - 10, stroke: "var(--axis)", "stroke-width": 1 }, svg);
+  groups.forEach((group, index) => {
+    const y = index * rowH + 4;
+    const g = el("g", { class: "row" + (state.account === group.key ? " active" : "") }, svg);
+    el("rect", { class: "hit", x: 0, y: y - 4, width, height: rowH - 6, rx: 6 }, g);
+    const label = el("text", { x: labelW - 10, y: y + barH + 4, "text-anchor": "end" }, g);
+    label.textContent = group.label.length > 22 ? group.label.slice(0, 21) + "…" : group.label;
+    [["income", "var(--income)", 0], ["spending", "var(--spending)", barH + gap]].forEach(([key, color, offset]) => {
+      const length = (group[key] / max) * plotW;
+      el("path", { d: barPath(labelW, y + offset, length, barH), fill: color }, g);
+      const text = el("text", { x: labelW + length + 8, y: y + offset + barH - 4, class: "val" }, g);
+      text.textContent = money.format(group[key]);
+    });
+    const net = group.income - group.spending;
+    g.addEventListener("mousemove", (event) => showTip(event, `<div class="t-title">${esc(group.label)}</div>` +
+      tipRow("Income", money.format(group.income), "var(--income)") + tipRow("Spending", money.format(group.spending), "var(--spending)") +
+      tipRow(net >= 0 ? "▲ Surplus" : "▼ Deficit", money.format(Math.abs(net)))));
+    g.addEventListener("mouseleave", hideTip);
+    g.addEventListener("click", () => onClick(group));
+  });
+}
+
+/* ---------- cumulative line chart ---------- */
+function niceStep(max, ticks = 4) {
+  const raw = max / ticks, power = 10 ** Math.floor(Math.log10(raw || 1)), unit = raw / power;
+  return (unit <= 1 ? 1 : unit <= 2 ? 2 : unit <= 2.5 ? 2.5 : unit <= 5 ? 5 : 10) * power;
+}
+
+function lineChart(container, days) {
+  container.innerHTML = "";
+  if (!days.length || container.clientWidth < MIN_CHART_WIDTH) return;
+  const width = container.clientWidth, height = 240;
+  const m = { top: 12, right: 72, bottom: 26, left: 48 };
+  const w = width - m.left - m.right, h = height - m.top - m.bottom;
+  const max = Math.max(...days.map((d) => Math.max(d.income, d.spending)), 1);
+  const step = niceStep(max), top = Math.ceil(max / step) * step;
+  const x = (i) => m.left + (days.length === 1 ? w / 2 : (i / (days.length - 1)) * w);
+  const y = (v) => m.top + h - (v / top) * h;
+  const svg = el("svg", { width, height, role: "img", "aria-label": "Cumulative income and spending over the statement period" }, container);
+
+  for (let v = 0; v <= top + 1e-9; v += step) {
+    el("line", { x1: m.left, x2: m.left + w, y1: y(v), y2: y(v), stroke: v === 0 ? "var(--axis)" : "var(--grid)", "stroke-width": 1 }, svg);
+    const t = el("text", { x: m.left - 8, y: y(v) + 4, "text-anchor": "end", class: "tick" }, svg);
+    t.textContent = "₹" + compact.format(v);
+  }
+  const tickCount = Math.min(5, days.length);
+  for (let k = 0; k < tickCount; k++) {
+    const i = tickCount === 1 ? 0 : Math.round((k / (tickCount - 1)) * (days.length - 1));
+    const t = el("text", { x: x(i), y: height - 6, "text-anchor": k === 0 ? "start" : k === tickCount - 1 ? "end" : "middle", class: "tick" }, svg);
+    t.textContent = shortDate.format(days[i].date);
+  }
+  const series = [["income", "var(--income)"], ["spending", "var(--spending)"]];
+  for (const [key, color] of series) {
+    const d = days.map((day, i) => `${i ? "L" : "M"}${x(i)},${y(day[key])}`).join(" ");
+    el("path", { d, fill: "none", stroke: color, "stroke-width": 2, "stroke-linejoin": "round", "stroke-linecap": "round" }, svg);
+  }
+  const last = days.length - 1, ends = series.map(([key, color]) => ({ key, color, y: y(days[last][key]) }));
+  const collide = Math.abs(ends[0].y - ends[1].y) < 16;
+  for (const end of ends) {
+    el("circle", { cx: x(last), cy: end.y, r: 4, fill: end.color, stroke: "var(--surface)", "stroke-width": 2 }, svg);
+    if (!collide) { const t = el("text", { x: x(last) + 8, y: end.y + 4, class: "val" }, svg); t.textContent = "₹" + compact.format(days[last][end.key]); }
+  }
+  const cross = el("line", { y1: m.top, y2: m.top + h, stroke: "var(--axis)", "stroke-width": 1, opacity: 0 }, svg);
+  const dots = series.map(([, color]) => el("circle", { r: 4, fill: color, stroke: "var(--surface)", "stroke-width": 2, opacity: 0 }, svg));
+  const overlay = el("rect", { x: m.left, y: m.top, width: w, height: h, fill: "transparent" }, svg);
+  overlay.addEventListener("mousemove", (event) => {
+    const box = svg.getBoundingClientRect();
+    const i = Math.max(0, Math.min(last, Math.round(((event.clientX - box.left - m.left) / w) * last)));
+    const day = days[i];
+    cross.setAttribute("x1", x(i)); cross.setAttribute("x2", x(i)); cross.setAttribute("opacity", 1);
+    dots.forEach((dot, n) => { dot.setAttribute("cx", x(i)); dot.setAttribute("cy", y(day[series[n][0]])); dot.setAttribute("opacity", 1); });
+    const net = day.income - day.spending;
+    showTip(event, `<div class="t-title">By ${esc(dateFmt.format(day.date))}</div>` +
+      tipRow("Income", money.format(day.income), "var(--income)") + tipRow("Spending", money.format(day.spending), "var(--spending)") +
+      tipRow(net >= 0 ? "▲ Surplus" : "▼ Deficit", money.format(Math.abs(net))));
+  });
+  overlay.addEventListener("mouseleave", () => { hideTip(); cross.setAttribute("opacity", 0); dots.forEach((dot) => dot.setAttribute("opacity", 0)); });
+}
+
+/* ---------- report sections ---------- */
+// Own-account transfers are not the user's income or spending.
+const excluded = (t) => t.internal_transfer || t.user_excluded;
+const counted = (r) => r.transactions.filter((t) => !excluded(t));
+const locationLabel = (loc) => !loc ? "" : loc.level === "state" ? loc.state + (loc.pincode ? ` (PIN ${loc.pincode})` : "") : `${loc.name}, ${loc.state}`;
+
+function cumulativeDays(transactions, base = 0) {
+  if (!transactions.length) return [];
+  const byDay = new Map();
+  for (const t of transactions) {
+    const entry = byDay.get(t.date) || { income: 0, spending: 0 };
+    const amount = num(t.amount);
+    if (amount > 0) entry.income += amount; else entry.spending += -amount;
+    byDay.set(t.date, entry);
+  }
+  const dates = [...byDay.keys()].sort();
+  const days = [];
+  let income = base, spending = 0;  // base: money carried over, so the line shows money available
+  for (let d = toDate(dates[0]); d <= toDate(dates[dates.length - 1]); d = new Date(d.getTime() + 86400000)) {
+    const entry = byDay.get(d.toISOString().slice(0, 10));
+    if (entry) { income += entry.income; spending += entry.spending; }
+    days.push({ date: d, income, spending });
+  }
+  return days;
+}
+
+function renderTiles(r) {
+  const income = num(r.total_income), spending = num(r.total_spending), net = num(r.net_cash_flow), surplus = net >= 0;
+  const rate = income ? Math.round((net / income) * 100) : null;
+  const incomeTile = `<div class="card tile"><div class="label"><span class="key" style="background:var(--income)"></span>Income</div>
+      <div class="value">${money.format(income)}</div><div class="note muted">${plural(r.accounts.length, "account")}</div></div>`;
+  const spendingTile = `<div class="card tile"><div class="label"><span class="key" style="background:var(--spending)"></span>Spending</div>
+      <div class="value">${money.format(spending)}</div><div class="note muted">${income ? Math.round((spending / income) * 100) + "% of income" : "No income recorded"}</div></div>`;
+  const periodNote = `<span class="${surplus ? "status-good" : "status-bad"}">${surplus ? "▲" : "▼"} ${money.format(Math.abs(net))}</span> this period${rate !== null ? ` · ${rate}% saved` : ""}`;
+
+  if (r.opening_balance == null) {
+    $("#tiles").innerHTML = incomeTile + spendingTile + `
+      <div class="card tile"><div class="label">${surplus ? "Surplus" : "Deficit"}</div>
+        <div class="value">${money.format(Math.abs(net))}</div>
+        <div class="note ${surplus ? "status-good" : "status-bad"}">${surplus ? "▲ Income covers spending" : "▼ Spending exceeds income"}</div></div>
+      <div class="card tile"><div class="label">Savings rate</div>
+        <div class="value">${rate !== null ? rate + "%" : "—"}</div><div class="note muted">of income kept · add an opening balance next to the file to see money left</div></div>`;
+    return;
+  }
+  // Opening balance = base amount carried over from last month: available = opening + income; left = available - spending.
+  const opening = num(r.opening_balance), left = num(r.left_at_end), missing = r.accounts_without_opening;
+  $("#tiles").innerHTML = `
+    <div class="card tile"><div class="label">Opening balance</div>
+      <div class="value">${money.format(opening)}</div>
+      <div class="note muted">${missing.length ? `carried over · not known for ${esc(missing.join(", "))}` : "carried over from last month"}</div></div>
+    ${incomeTile}${spendingTile}
+    <div class="card tile"><div class="label">Left at end</div>
+      <div class="value ${left < 0 ? "status-bad" : ""}">${left < 0 ? "−" : ""}${money.format(Math.abs(left))}</div>
+      <div class="note">${periodNote}</div></div>`;
+}
+
+function renderAccounts(r) {
+  const multiple = r.accounts.length > 1;
+  $("#transfer-note").textContent = r.internal_transfer_count
+    ? `${money.format(num(r.internal_transfer_total))} moved between your accounts (${plural(r.internal_transfer_count, "transfer")}) is excluded`
+    : multiple ? "No transfers between your own accounts found" : "";
+  pairedBarChart($("#chart-accounts"), r.accounts.map((a) => ({ key: a.account, label: a.account, income: num(a.total_income), spending: num(a.total_spending) })),
+    (group) => setFilters({ account: state.account === group.key ? "all" : group.key }, true));
+  $("#account-table").innerHTML = `<thead><tr><th>Account</th><th class="hide-sm">Period</th><th class="num">Txns</th><th class="num hide-sm">Opening</th><th class="num">Income</th><th class="num">Spending</th><th class="num">Net</th><th class="num hide-sm">Closing</th><th class="hide-sm">Top category</th></tr></thead><tbody>` +
+    r.accounts.map((a) => {
+      const net = num(a.net_cash_flow);
+      return `<tr class="clickable${state.account === a.account ? " selected" : ""}" data-account="${esc(a.account)}">
+        <td>${esc(a.account)}${a.account_number ? `<span class="acct-no">A/c ${esc(a.account_number)}</span>` : ""}</td><td class="date hide-sm">${esc(shortDate.format(toDate(a.statement_start)))} – ${esc(dateFmt.format(toDate(a.statement_end)))}</td>
+        <td class="num">${a.transaction_count}</td><td class="num hide-sm">${a.opening_balance != null ? money.format(num(a.opening_balance)) : '<span class="muted" title="Not in the statement; type it next to the file">—</span>'}</td>
+        <td class="num">${money.format(num(a.total_income))}</td><td class="num">${money.format(num(a.total_spending))}</td>
+        <td class="num ${net >= 0 ? "status-good" : "status-bad"}">${net >= 0 ? "▲" : "▼"} ${money.format(Math.abs(net))}</td>
+        <td class="num hide-sm">${a.closing_balance != null ? money.format(num(a.closing_balance)) : '<span class="muted">—</span>'}</td><td class="hide-sm">${esc(a.top_category || "—")}</td></tr>`;
+    }).join("") + "</tbody>";
+  for (const row of document.querySelectorAll("#account-table tr[data-account]")) {
+    row.addEventListener("click", () => setFilters({ account: state.account === row.dataset.account ? "all" : row.dataset.account }, true));
+  }
+}
+
+function renderCategories(r) {
+  const active = state.category === "all" ? null : state.category;
+  barChart($("#chart-categories"), r.category_spend.map((c) => ({
+    key: c.category, label: c.category, value: num(c.amount),
+    color: !active || active === c.category ? "var(--category)" : "var(--category-dim)",
+    valueLabel: money.format(num(c.amount)), extra: num(c.percentage).toFixed(1) + "%",
+    tip: `<div class="t-title">${esc(c.category)}</div>${tipRow("Spent", money.format(num(c.amount)))}${tipRow("Share", num(c.percentage).toFixed(1) + "%")}${tipRow("Transactions", c.count)}`,
+  })), { active, onClick: (item) => setFilters({ category: state.category === item.key ? "all" : item.key }, true) });
+
+  const max = Math.max(...r.category_spend.map((c) => num(c.amount)), 1);
+  $("#category-table").innerHTML = `<thead><tr><th>Category</th><th class="num">Spent</th><th class="num">Share</th><th class="num">Txns</th><th class="bar-cell"></th></tr></thead><tbody>` +
+    r.category_spend.map((c) => `<tr class="clickable${active === c.category ? " selected" : ""}" data-category="${esc(c.category)}">
+      <td>${esc(c.category)}</td><td class="num">${money.format(num(c.amount))}</td><td class="num">${num(c.percentage).toFixed(1)}%</td><td class="num">${c.count}</td>
+      <td class="bar-cell"><div class="mini-bar" style="width:${(num(c.amount) / max) * 100}%"></div></td></tr>`).join("") +
+    `</tbody><tfoot><tr><td><strong>Total</strong></td><td class="num"><strong>${money.format(num(r.total_spending))}</strong></td><td class="num">100%</td><td class="num">${r.category_spend.reduce((n, c) => n + c.count, 0)}</td><td class="bar-cell"></td></tr></tfoot>`;
+  for (const row of document.querySelectorAll("#category-table tr[data-category]")) {
+    row.addEventListener("click", () => setFilters({ category: state.category === row.dataset.category ? "all" : row.dataset.category }, true));
+  }
+}
+
+function renderLocations(r) {
+  const level = state.locationLevel, spending = num(r.total_spending), unlocated = num(r.unlocated_spending);
+  for (const tab of document.querySelectorAll("#location-tabs button")) tab.setAttribute("aria-selected", tab.dataset.level === level);
+  $("#location-note").textContent = spending
+    ? `${money.format(spending - unlocated)} of spending (${Math.round(((spending - unlocated) / spending) * 100)}%) has a place in its description. Online payments usually don't. Add your own towns and villages to app/data/places.csv.`
+    : "";
+  const rows = level === "state" ? r.state_spend : r.place_spend;
+  const active = state.location === "all" ? null : state.location;
+  barChart($("#chart-locations"), rows.map((p) => {
+    const key = level === "state" ? `state:${p.state}` : `place:${p.name}|${p.state}`;
+    const label = level === "state" ? p.name : `${p.name} · ${p.level}`;
+    return {
+      key, label, value: num(p.amount), valueLabel: money.format(num(p.amount)), extra: num(p.percentage).toFixed(1) + "%",
+      color: !active || active === key ? "var(--category)" : "var(--category-dim)",
+      tip: `<div class="t-title">${esc(p.name)}</div>` + (level === "state" ? "" : `<div class="t-sub">${esc(p.level)}${p.district ? ", " + esc(p.district) + " district" : ""}, ${esc(p.state)}</div>`) +
+        tipRow("Spent", money.format(num(p.amount))) + tipRow("Share of spending", num(p.percentage).toFixed(1) + "%") + tipRow("Transactions", p.count),
+    };
+  }), { active, labelWidth: 190, onClick: (item) => setFilters({ location: state.location === item.key ? "all" : item.key }, true) });
+}
+
+function renderIncome(r) {
+  $("#income-table").innerHTML = r.income_sources.length
+    ? `<thead><tr><th>Source</th><th class="num">Amount</th><th class="num">Share</th><th class="num">Txns</th></tr></thead><tbody>` +
+      r.income_sources.map((c) => `<tr><td>${esc(c.category)}</td><td class="num credit">+${money.format(num(c.amount))}</td><td class="num">${num(c.percentage).toFixed(1)}%</td><td class="num">${c.count}</td></tr>`).join("") + "</tbody>"
+    : `<tbody><tr><td class="muted">No income in these statements.</td></tr></tbody>`;
+}
+
+function matchesLocation(t) {
+  if (state.location === "all") return true;
+  if (!t.location) return false;
+  const [kind, value] = state.location.split(/:(.*)/s);
+  return kind === "state" ? t.location.state === value : `${t.location.name}|${t.location.state}` === value;
+}
+
+function renderTransactions(r) {
+  const options = (values, current, allLabel) => `<option value="all">${allLabel}</option>` +
+    values.map(([value, label]) => `<option value="${esc(value)}" ${current === value ? "selected" : ""}>${esc(label)}</option>`).join("");
+  $("#filter-account").innerHTML = options(r.accounts.map((a) => [a.account, a.account]), state.account, "All accounts");
+  $("#filter-account").hidden = r.accounts.length < 2;
+  $("#filter-category").innerHTML = options([...new Set(r.transactions.map((t) => t.category))].sort().map((c) => [c, c]), state.category, "All categories");
+  const states = [...new Set(r.transactions.filter((t) => t.location).map((t) => t.location.state))].sort();
+  const places = [...new Map(r.transactions.filter((t) => t.location && t.location.level !== "state").map((t) => [`${t.location.name}|${t.location.state}`, t.location])).entries()]
+    .sort((a, b) => a[1].name.localeCompare(b[1].name));
+  $("#filter-location").innerHTML = options([...states.map((s) => [`state:${s}`, s]), ...places.map(([key, loc]) => [`place:${key}`, `${loc.name} (${loc.level})`])], state.location, "All locations");
+
+  const rows = r.transactions.filter((t) => matchesFilters(t) && (!state.dateRange || (t.date >= state.dateRange.from && t.date <= state.dateRange.to))
+    && (state.direction === "all" || (state.direction === "in" ? num(t.amount) > 0 : num(t.amount) < 0)));
+  state.shownRows = rows;
+  const changes = state.excludedIds.size + state.includedIds.size;
+  $("#tx-changes").innerHTML = changes ? `${plural(changes, "change")} by you · <button type="button" id="reset-choices">Reset</button>` : "";
+  const chip = $("#date-chip");
+  chip.hidden = !state.dateRange;
+  chip.textContent = state.dateRange ? `${state.dateRange.label} ✕` : "";
+  chip.setAttribute("aria-label", state.dateRange ? `Clear date filter ${state.dateRange.label}` : "");
+  // Totals use the same rules as the Income and Spending tiles: own-account transfers are listed but not counted.
+  const countedRows = rows.filter((t) => !excluded(t));
+  const totalIn = countedRows.filter((t) => num(t.amount) > 0).reduce((sum, t) => sum + num(t.amount), 0);
+  const totalOut = countedRows.filter((t) => num(t.amount) < 0).reduce((sum, t) => sum - num(t.amount), 0);
+  const net = totalIn - totalOut;
+  const showAccount = r.accounts.length > 1;
+  const columns = showAccount ? 7 : 6;
+
+  // One timeline across all statements, grouped by day. Same-day rows keep statement order.
+  const days = new Map();
+  for (const t of rows) (days.get(t.date) || days.set(t.date, []).get(t.date)).push(t);
+  const dates = [...days.keys()].sort();
+  if (state.sortOrder === "desc") dates.reverse();
+
+  const amountCells = (t) => {
+    const amount = num(t.amount), value = money.format(Math.abs(amount));
+    const title = excluded(t) ? ` title="Not counted: ${t.user_excluded ? "you left it out" : "own-account transfer"}"` : "";
+    const cls = excluded(t) ? "excluded-amt" : amount > 0 ? "credit" : "";
+    return amount > 0
+      ? `<td class="num ${cls}"${title}>+${value}</td><td class="num"></td>`
+      : `<td class="num"></td><td class="num ${cls}"${title}>−${value}</td>`;
+  };
+  const row = (t) => {
+    const amount = num(t.amount);
+    const kind = t.internal_transfer ? "internal" : t.user_excluded ? "left-out" : "";
+    const note = t.transfer_note ? `↔ ${t.transfer_note}` : t.user_excluded ? "✕ Left out by you" : t.user_included ? "✓ Counted by you (looked like a transfer between your accounts)" : "";
+    return `<tr class="${kind}"><td class="inc"><input type="checkbox" data-toggle="${esc(t.id)}" ${excluded(t) ? "" : "checked"} aria-label="Count ${esc(t.description)} in the analysis"></td>
+      <td>${esc(t.description)}${note ? `<span class="pair-note">${esc(note)}</span>` : ""}</td>
+      ${showAccount ? `<td class="place">${esc(t.account)}</td>` : ""}
+      <td><span class="chip ${kind}">${esc(t.category)}</span></td>
+      <td class="place hide-sm">${esc(locationLabel(t.location)) || '<span class="muted">—</span>'}</td>
+      ${amountCells(t)}</tr>`;
+  };
+  const dayHead = (date, items) => {
+    const counted = items.filter((t) => !excluded(t));
+    const out = counted.filter((t) => num(t.amount) < 0).reduce((sum, t) => sum - num(t.amount), 0);
+    const into = counted.filter((t) => num(t.amount) > 0).reduce((sum, t) => sum + num(t.amount), 0);
+    const parts = [plural(items.length, "transaction"), out ? `spent ${money.format(out)}` : "", into ? `received ${money.format(into)}` : ""].filter(Boolean);
+    return `<tr class="day-head"><td colspan="${columns}">${esc(weekdayFmt.format(toDate(date)))}, ${esc(dateFmt.format(toDate(date)))}<span class="day-sum">${esc(parts.join(" · "))}</span></td></tr>`;
+  };
+
+  $("#tx-table").innerHTML = `<thead><tr><th class="inc" title="Counted in the analysis">✓</th><th>Description</th>${showAccount ? "<th>Account</th>" : ""}<th>Category</th><th class="hide-sm">Location</th><th class="num">Money in</th><th class="num">Money out</th></tr></thead><tbody>` +
+    dates.map((date) => dayHead(date, days.get(date)) + days.get(date).map(row).join("")).join("") +
+    `</tbody><tfoot>
+      <tr><td colspan="${columns - 2}"><strong>${plural(rows.length, "transaction")}</strong> on ${plural(dates.length, "day")}${rows.some(excluded) ? '<span class="pair-note">Unticked rows (transfers between your own accounts, transactions you left out) are struck through and not counted.</span>' : ""}</td>
+        <td class="num credit"><strong>+${money.format(totalIn)}</strong></td><td class="num"><strong>−${money.format(totalOut)}</strong></td></tr>
+      <tr class="net-row" ${state.direction === "all" ? "" : "hidden"}><td colspan="${columns - 2}">${net >= 0 ? '<span class="status-good">▲ Surplus</span>' : '<span class="status-bad">▼ Deficit</span>'} <span class="muted">(money in − money out)</span></td>
+        <td class="num" colspan="2"><strong>${money.format(Math.abs(net))}</strong></td></tr>
+    </tfoot>`;
+}
+
+/* ---------- spending by date ---------- */
+const DAY_MS = 86400000;
+const iso = (d) => d.toISOString().slice(0, 10);
+const addDays = (d, n) => new Date(d.getTime() + n * DAY_MS);
+const monthFmt = new Intl.DateTimeFormat("en-IN", { month: "short", year: "numeric", timeZone: "UTC" });
+const weekdayFmt = new Intl.DateTimeFormat("en-IN", { weekday: "short", timeZone: "UTC" });
+const matchesFilters = (t) => (state.account === "all" || t.account === state.account) && (state.category === "all" || t.category === state.category) && matchesLocation(t);
+
+function periodStart(date, level) {
+  if (level === "week") return addDays(date, -((date.getUTCDay() + 6) % 7));  // weeks start on Monday
+  if (level === "month") return new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), 1));
+  return date;
+}
+function periodEnd(start, level) {
+  if (level === "week") return addDays(start, 6);
+  if (level === "month") return new Date(Date.UTC(start.getUTCFullYear(), start.getUTCMonth() + 1, 0));
+  return start;
+}
+function periodLabel(start, level) {
+  if (level === "week") return `Week of ${shortDate.format(start)}`;
+  if (level === "month") return monthFmt.format(start);
+  return `${weekdayFmt.format(start)}, ${shortDate.format(start)}`;
+}
+
+// Category colours follow the category, ranked by total spending over the whole report,
+// so filtering never repaints a category. Slot 1 (blue) is reserved for income, so categories
+// take slots 2-8; beyond 7 categories, the rest fold into "Other".
+const SLOT_COUNT = 7;
+const REST = "\u0000rest";  // the folded group; never clashes with a real category such as "Other"
+function categoryColors(r) {
+  const colors = new Map(r.category_spend.slice(0, SLOT_COUNT).map((c, i) => [c.category, `var(--c${i + 2})`]));
+  return { colorOf: (category) => colors.get(category) || "var(--c-other)", groupOf: (category) => (colors.has(category) ? category : REST), order: [...colors.keys(), REST],
+           label: (group) => (group === REST ? "Other categories" : group) };
+}
+
+function buildPeriods(r, level, palette) {
+  if (!r.statement_start) return [];
+  const periods = new Map();
+  for (let d = periodStart(toDate(r.statement_start), level); d <= toDate(r.statement_end); d = addDays(periodEnd(d, level), 1)) {
+    periods.set(iso(d), { key: iso(d), from: iso(d), to: iso(periodEnd(d, level)), label: periodLabel(d, level), start: d, spending: 0, income: 0, count: 0, expenses: [], incomes: [], byCategory: new Map() });
+  }
+  for (const t of r.transactions) {
+    if (excluded(t) || !matchesFilters(t)) continue;
+    const period = periods.get(iso(periodStart(toDate(t.date), level)));
+    if (!period) continue;
+    const amount = num(t.amount);
+    period.count += 1;
+    if (amount < 0) {
+      period.spending += -amount;
+      period.expenses.push(t);
+      const group = palette.groupOf(t.category);
+      period.byCategory.set(group, (period.byCategory.get(group) || 0) - amount);
+    } else { period.income += amount; period.incomes.push(t); }
+  }
+  return [...periods.values()];
+}
+
+// Columns: <=24px wide, 4px rounded top, square at the baseline.
+function columnPath(x, top, width, base) {
+  const r = Math.min(4, width / 2, base - top);
+  return `M${x},${base} V${top + r} Q${x},${top} ${x + r},${top} H${x + width - r} Q${x + width},${top} ${x + width},${top + r} V${base} Z`;
+}
+
+/* The base amount for running "money left": the opening balance (balance at the start of the first
+   statement) of the accounts in view. A running balance needs every transaction, so it is not shown
+   while a category or location filter hides some of them. */
+function baseAmount(r) {
+  if (state.category !== "all" || state.location !== "all") return null;
+  if (state.account === "all") return r.opening_balance != null ? num(r.opening_balance) : null;
+  const account = r.accounts.find((a) => a.account === state.account);
+  return account?.opening_balance != null ? num(account.opening_balance) : null;
+}
+
+// Money left after each period: base + income so far - spending so far.
+function withMoneyLeft(periods, base) {
+  let left = base;
+  return periods.map((p) => ({ ...p, left: base == null ? null : (left += p.income - p.spending) }));
+}
+
+/* Spending per period, stacked by category. Income is not drawn as a bar; a blue ▲ under the date
+   marks when income arrived (amount in the tooltip, and next to the marker when there is room). */
+function columnChart(container, periods, palette, { activeKey, onClick, average }) {
+  container.innerHTML = "";
+  if (!periods.length || container.clientWidth < MIN_CHART_WIDTH) return;
+  const anyIncome = periods.some((p) => p.income > 0);
+  const width = container.clientWidth, height = anyIncome ? 272 : 250;
+  const m = { top: 22, right: 12, bottom: anyIncome ? 50 : 28, left: 52 };
+  const w = width - m.left - m.right, h = height - m.top - m.bottom, base = m.top + h;
+  const max = Math.max(...periods.map((p) => p.spending), 1);
+  const step = niceStep(max), top = Math.ceil(max / step) * step;
+  const y = (v) => base - (v / top) * h;
+  const slot = w / periods.length, barW = Math.max(2, Math.min(24, slot * 0.7)), gap = 2;
+  const svg = el("svg", { width, height, role: "img", "aria-label": "Spending per period, by category, with income dates marked" }, container);
+
+  for (let v = 0; v <= top + 1e-9; v += step) {
+    el("line", { x1: m.left, x2: m.left + w, y1: y(v), y2: y(v), stroke: v === 0 ? "var(--axis)" : "var(--grid)", "stroke-width": 1 }, svg);
+    const t = el("text", { x: m.left - 8, y: y(v) + 4, "text-anchor": "end", class: "tick" }, svg);
+    t.textContent = "₹" + compact.format(v);
+  }
+  const labelEvery = Math.max(1, Math.ceil(periods.length / Math.max(2, Math.floor(w / 70))));
+  const peak = periods.reduce((best, p) => (p.spending > best.spending ? p : best), periods[0]);
+  const short = (text) => (text.length > 26 ? text.slice(0, 25) + "…" : text);
+  periods.forEach((p, i) => {
+    const cx = m.left + slot * i + slot / 2, x = cx - barW / 2;
+    const g = el("g", { class: "row" + (activeKey === p.key ? " active" : "") }, svg);
+    el("rect", { class: "hit", x: m.left + slot * i, y: m.top, width: slot, height: height - m.top, rx: 4 }, g);
+    const segments = palette.order.filter((c) => p.byCategory.get(c) > 0).map((c) => [c, p.byCategory.get(c)]);
+    const dim = activeKey && activeKey !== p.key ? 0.35 : 1;
+    let cumulative = 0;
+    segments.forEach(([category, value], n) => {
+      const bottom = y(cumulative) - (n ? gap : 0);
+      cumulative += value;
+      const topY = Math.min(y(cumulative), bottom - 1);
+      const attrs = { fill: palette.colorOf(category), "fill-opacity": dim };
+      if (n === segments.length - 1) el("path", { d: columnPath(x, topY, barW, bottom), ...attrs }, g);
+      else el("rect", { x, y: topY, width: barW, height: bottom - topY, ...attrs }, g);
+    });
+    if (i % labelEvery === 0) {
+      const t = el("text", { x: cx, y: base + 18, "text-anchor": "middle", class: "tick" }, svg);
+      t.textContent = state.dateLevel === "month" ? monthFmt.format(p.start) : shortDate.format(p.start);
+    }
+    if (p.income > 0) {  // income marker strip under the date labels
+      const my = base + 32;
+      el("path", { d: `M${cx},${my - 5} L${cx + 5},${my + 4} L${cx - 5},${my + 4} Z`, fill: "var(--income)", "fill-opacity": dim }, g);
+      if (slot >= 38 || periods.filter((q) => q.income > 0).length <= 6) {
+        const t = el("text", { x: cx, y: my + 16, "text-anchor": "middle", class: "tick" }, g);
+        t.textContent = "+" + compact.format(p.income);
+      }
+    }
+    const byAmount = [...segments].sort((a, b) => b[1] - a[1]);
+    const biggest = [...p.expenses].sort((a, b) => num(a.amount) - num(b.amount)).slice(0, 3);
+    g.addEventListener("mousemove", (event) => showTip(event, `<div class="t-title">${esc(p.label)}</div>` +
+      (p.spending ? tipRow("Spent", money.format(p.spending)) + byAmount.map(([c, v]) => tipRow(palette.label(c), money.format(v), palette.colorOf(c))).join("") +
+        `<div class="t-sub" style="margin-top:6px">Biggest expenses</div>` + biggest.map((t) => tipRow(short(t.description), money.format(-num(t.amount)))).join("") : `<div class="t-sub">No spending</div>`) +
+      (p.income ? `<div style="margin-top:6px"></div>` + tipRow("▲ Income", "+" + money.format(p.income), "var(--income)") : "") +
+      (p.left != null ? `<div style="margin-top:6px"></div>` + tipRow("Money left after", (p.left < 0 ? "−" : "") + money.format(Math.abs(p.left))) : "")));
+    g.addEventListener("mouseleave", hideTip);
+    if (p.count) g.addEventListener("click", () => onClick(p));
+  });
+  if (average > 0) {
+    el("line", { x1: m.left, x2: m.left + w, y1: y(average), y2: y(average), stroke: "var(--ink-2)", "stroke-width": 1, opacity: 0.6, "pointer-events": "none" }, svg);
+    // Surface-coloured halo keeps the label readable where it crosses a column.
+    const t = el("text", { x: m.left + w, y: y(average) - 5, "text-anchor": "end", class: "tick", "pointer-events": "none",
+                           stroke: "var(--surface)", "stroke-width": 4, "paint-order": "stroke", "stroke-linejoin": "round" }, svg);
+    t.textContent = `avg ₹${compact.format(average)}`;
+  }
+  if (peak.spending > 0) {
+    const i = periods.indexOf(peak), cx = m.left + slot * i + slot / 2;
+    const t = el("text", { x: Math.min(Math.max(cx, m.left + 30), m.left + w - 30), y: y(peak.spending) - 6, "text-anchor": "middle", class: "val", "pointer-events": "none",
+                           stroke: "var(--surface)", "stroke-width": 4, "paint-order": "stroke", "stroke-linejoin": "round" }, svg);
+    t.textContent = "₹" + compact.format(peak.spending);
+  }
+}
+
+const RANKED_LIMIT = 10;
+function renderDates(r) {
+  const level = state.dateLevel;
+  for (const tab of document.querySelectorAll("#date-tabs button")) tab.setAttribute("aria-selected", tab.dataset.level === level);
+  const palette = categoryColors(r);
+  const base = baseAmount(r);
+  const periods = withMoneyLeft(buildPeriods(r, level, palette), base);
+  const total = periods.reduce((sum, p) => sum + p.spending, 0);
+  const received = periods.reduce((sum, p) => sum + p.income, 0);
+  const average = periods.length ? total / periods.length : 0;
+  const peak = periods.reduce((best, p) => (p.spending > (best?.spending ?? 0) ? p : best), null);
+  const unit = { day: "day", week: "week", month: "month" }[level];
+  const quiet = periods.filter((p) => p.spending === 0).length;
+  const filtered = state.account !== "all" || state.category !== "all" || state.location !== "all";
+  const signed = (v) => (v < 0 ? "−" : "") + money.format(Math.abs(v));
+
+  // Base amount strip: start balance, income received (when and how much), spent, money left.
+  const startDate = r.statement_start ? shortDate.format(toDate(r.statement_start)) : "";
+  const left = base != null ? base + received - total : null;
+  const missing = state.account === "all" ? r.accounts_without_opening : [];
+  $("#date-base").innerHTML =
+    (base != null
+      ? `<span>Base amount (balance on ${esc(startDate)})<br><strong>${signed(base)}</strong></span>`
+      : `<span>Base amount<br><strong class="muted">${filtered ? "—" : "not in statement"}</strong></span>`) +
+    `<span>Income received<br><strong>${received ? "+" + money.format(received) : "none"}</strong></span>
+     <span>Spent<br><strong>${money.format(total)}</strong></span>` +
+    (left != null ? `<span>Money left<br><strong class="${left < 0 ? "status-bad" : ""}">${signed(left)}</strong></span>` : "") +
+    (base == null && !filtered ? `<span class="incomes muted">Type the opening balance next to the file to use it as the base amount.</span>` : "") +
+    (base == null && filtered && (state.category !== "all" || state.location !== "all") ? `<span class="incomes muted">Money left is shown when no category or location filter is set.</span>` : "") +
+    (missing.length && base != null ? `<span class="incomes muted">Base amount not known for ${esc(missing.join(", "))}.</span>` : "");
+
+  $("#date-stats").innerHTML = peak
+    ? `<span>Highest ${unit}: <strong>${esc(peak.label)}</strong> · ${money.format(peak.spending)}</span>
+       <span>Average: <strong>${money.format(average)}</strong> per ${unit}</span>
+       <span><strong>${quiet}</strong> no-spend ${unit}${quiet === 1 ? "" : "s"} of ${periods.length}</span>
+       ${filtered ? `<span class="muted">Showing current filters</span>` : ""}`
+    : `<span class="muted">No spending for the current filters.</span>`;
+
+  const present = palette.order.filter((c) => periods.some((p) => p.byCategory.get(c) > 0));
+  $("#date-legend").innerHTML = present.map((c) => `<span><span class="key" style="background:${palette.colorOf(c)}"></span>${esc(palette.label(c))}</span>`).join("") +
+    (received ? `<span><span class="income-mark">▲</span> Income received</span>` : "");
+
+  const onClick = (p) => setFilters({ dateRange: state.dateRange?.key === p.key ? null : { key: p.key, from: p.from, to: p.to, label: p.label } }, true);
+  columnChart($("#chart-dates"), periods, palette, { activeKey: state.dateRange?.key, onClick, average });
+
+  // Spending days sorted by amount, largest first.
+  const ranked = periods.filter((p) => p.spending > 0).sort((a, b) => b.spending - a.spending || a.key.localeCompare(b.key));
+  const shown = state.rankedAll ? ranked : ranked.slice(0, RANKED_LIMIT);
+  const toggle = $("#ranked-toggle");
+  toggle.hidden = ranked.length <= RANKED_LIMIT;
+  toggle.textContent = state.rankedAll ? "Show top 10" : `Show all ${ranked.length}`;
+  const active = state.dateRange?.key;
+  const wide = $("#chart-ranked").clientWidth > 640;  // room to name the day's biggest expense after the bar
+  barChart($("#chart-ranked"), shown.map((p) => {
+    const top = [...p.expenses].sort((a, b) => num(a.amount) - num(b.amount))[0];
+    return {
+      key: p.key, label: p.label, value: p.spending, valueLabel: money.format(p.spending),
+      extra: `${total ? ((p.spending / total) * 100).toFixed(1) : 0}%${top && wide ? " · " + (top.description.length > 22 ? top.description.slice(0, 21) + "…" : top.description) : ""}`,
+      color: !active || active === p.key ? "var(--spending)" : "var(--category-dim)",
+      tip: `<div class="t-title">${esc(p.label)}</div>${tipRow("Spent", money.format(p.spending))}${tipRow("Share of spending", `${total ? ((p.spending / total) * 100).toFixed(1) : 0}%`)}${tipRow("Expenses", p.expenses.length)}` +
+        (p.income ? tipRow("▲ Income that " + unit, "+" + money.format(p.income), "var(--income)") : "") + (p.left != null ? tipRow("Money left after", signed(p.left)) : ""),
+    };
+  }), { active, labelWidth: 130, rowHeight: 30, barHeight: 16, valueWidth: wide ? 310 : 150, onClick: (item) => onClick(ranked.find((p) => p.key === item.key)) });
+
+  // Date table: each date with spending and money left, its income mentioned, then every expense (largest first).
+  const rows = periods.filter((p) => p.expenses.length || p.incomes.length);
+  const extra = (t) => (level === "day" ? (r.accounts.length > 1 ? `<span class="pair-note">${esc(t.account)}</span>` : "")
+    : `<span class="pair-note">${esc(shortDate.format(toDate(t.date)))}${r.accounts.length > 1 ? " · " + esc(t.account) : ""}</span>`);
+  const showLeft = base != null;
+  $("#date-table").innerHTML = `<thead><tr><th>${level === "day" ? "Date" : level === "week" ? "Week" : "Month"} / transaction</th><th class="hide-sm">Category</th><th class="num">Spent</th>${showLeft ? '<th class="num">Money left</th>' : ""}</tr></thead><tbody>` +
+    (showLeft ? `<tr class="income-row"><td colspan="2">Base amount (balance on ${esc(startDate)})</td><td class="num"></td><td class="num"><strong>${signed(base)}</strong></td></tr>` : "") +
+    rows.map((p) => {
+      const selected = state.dateRange?.key === p.key ? " selected" : "";
+      const head = `<tr class="day-head clickable${selected}" data-key="${p.key}"><td colspan="2">${esc(p.label)}
+          <span class="day-sum" style="float:none;margin-left:8px">${[p.expenses.length ? plural(p.expenses.length, "expense") : "", p.income ? `▲ income +${money.format(p.income)}` : ""].filter(Boolean).join(" · ")}</span></td>
+        <td class="num">${p.spending ? money.format(p.spending) : ""}</td>${showLeft ? `<td class="num">${signed(p.left)}</td>` : ""}</tr>`;
+      const expenseRows = [...p.expenses].sort((a, b) => num(a.amount) - num(b.amount)).map((t) => `<tr>
+          <td><span class="key" style="background:${palette.colorOf(palette.groupOf(t.category))}"></span>${esc(t.description)}${extra(t)}</td>
+          <td class="exp-cat hide-sm">${esc(t.category)}</td><td class="num">${money.format(-num(t.amount))}</td>${showLeft ? '<td class="num"></td>' : ""}</tr>`).join("");
+      return head + expenseRows;
+    }).join("") + `</tbody><tfoot><tr><td colspan="2"><strong>Total spent</strong>${received ? ` <span class="muted">· income +${money.format(received)}</span>` : ""}</td><td class="num"><strong>${money.format(total)}</strong></td>${showLeft ? `<td class="num"><strong>${signed(left)}</strong></td>` : ""}</tr></tfoot>`;
+  for (const row of document.querySelectorAll("#date-table tr[data-key]")) {
+    row.addEventListener("click", () => onClick(rows.find((p) => p.key === row.dataset.key)));
+  }
+}
+
+$("#ranked-toggle").addEventListener("click", () => { state.rankedAll = !state.rankedAll; renderDates(state.report); });
+
+function setFilters(changes, scroll) {
+  Object.assign(state, changes);
+  renderAccounts(state.report);
+  renderCategories(state.report);
+  renderLocations(state.report);
+  renderDates(state.report);
+  renderTransactions(state.report);
+  if (scroll && Object.values(changes).some((v) => v && v !== "all")) $("#transactions-card").scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+function renderCharts() {
+  const r = state.report;
+  if (!r) return;
+  renderAccounts(r);
+  renderCategories(r);
+  renderLocations(r);
+  renderDates(r);
+  const base = r.opening_balance != null ? num(r.opening_balance) : 0;
+  $("#trend-income-label").textContent = r.opening_balance != null ? "Opening balance + income" : "Income";
+  $("#trend-note").textContent = r.opening_balance != null ? "Where the lines cross, spending has used up the money carried over and income" : "Where the lines cross, spending overtakes income";
+  lineChart($("#chart-trend"), cumulativeDays(counted(r), base));
+}
+
+function render(r, { keepView = false } = {}) {
+  const spanDays = r.statement_start ? (toDate(r.statement_end) - toDate(r.statement_start)) / DAY_MS : 0;
+  if (keepView) state.report = r;  // same statements, new choices: keep filters, views and scroll position
+  else {
+    $("#filter-direction").value = "all";
+    Object.assign(state, { report: r, account: "all", category: "all", location: "all", dateRange: null, direction: "all", dateLevel: spanDays <= 62 ? "day" : spanDays <= 26 * 7 ? "week" : "month" });
+  }
+  const currency = r.transactions[0]?.currency || "INR";
+  try { money = new Intl.NumberFormat("en-IN", { style: "currency", currency }); } catch { /* keep INR */ }
+  $("#report").hidden = false;
+  $("#period").textContent = (r.statement_start ? `${dateFmt.format(toDate(r.statement_start))} – ${dateFmt.format(toDate(r.statement_end))} · ` : "") +
+    `${plural(r.transaction_count, "transaction")} across ${plural(r.accounts.length, "account")}`;
+  const large = largeTransactions(r), leftOut = large.filter((t) => t.user_excluded).length;
+  const reviewLink = $("#review-large");
+  reviewLink.hidden = !large.length;
+  reviewLink.textContent = `Review large transactions (${large.length}${leftOut ? `, ${leftOut} left out` : ""})`;
+  const warnings = $("#warnings");
+  warnings.hidden = !r.warnings.length;
+  warnings.innerHTML = r.warnings.length ? `<strong>Heads up</strong><ul>${r.warnings.map((w) => `<li>${esc(w)}</li>`).join("")}</ul>` : "";
+  renderTiles(r);
+  renderCharts();
+  renderIncome(r);
+  renderTransactions(r);
+  $("#insights").innerHTML = r.insights.map((text) => `<li>${esc(text)}</li>`).join("");
+}
+
+/* ---------- upload ---------- */
+const fileInput = $("#file"), form = $("#upload");
+const defaultLabel = (name) => name.replace(/\.[^.]+$/, "").replace(/[_-]+/g, " ").trim();
+const kb = (bytes) => bytes < 1024 * 1024 ? Math.max(1, Math.round(bytes / 1024)) + " KB" : (bytes / 1024 / 1024).toFixed(1) + " MB";
+
+function renderFileList() {
+  const list = $("#file-list");
+  list.innerHTML = state.files.map((item, index) => `<li>
+      <span class="fname">${esc(item.file.name)}<small>${kb(item.file.size)}</small></span>
+      <input type="text" value="${esc(item.label)}" data-index="${index}" aria-label="Account name for ${esc(item.file.name)}" placeholder="Account name">
+      <input type="text" value="${esc(item.number)}" data-number="${index}" aria-label="Account number for ${esc(item.file.name)}" placeholder="A/c no. (auto)" inputmode="numeric" autocomplete="off">
+      <input type="text" value="${esc(item.opening)}" data-opening="${index}" aria-label="Opening balance for ${esc(item.file.name)}" title="Money carried over from last month. Leave blank to read it from the statement." placeholder="Opening bal." inputmode="decimal" autocomplete="off">
+      <button type="button" class="ghost" data-remove="${index}" aria-label="Remove ${esc(item.file.name)}">✕</button></li>`).join("");
+  $("#analyze").disabled = !state.files.length;
+  $("#hint").textContent = state.files.length
+    ? `${plural(state.files.length, "statement")} selected. Give statements from the same account the same name; they are merged.`
+    : "…or drop files here. Add one or more statements per bank account.";
+}
+
+function addFiles(files) {
+  for (const file of files) {
+    if (!state.files.some((item) => item.file.name === file.name && item.file.size === file.size)) state.files.push({ file, label: defaultLabel(file.name), number: "", opening: "" });
+  }
+  renderFileList();
+}
+
+fileInput.addEventListener("change", () => { addFiles(fileInput.files); fileInput.value = ""; });
+form.addEventListener("dragover", (event) => { event.preventDefault(); form.classList.add("drag"); });
+form.addEventListener("dragleave", () => form.classList.remove("drag"));
+form.addEventListener("drop", (event) => { event.preventDefault(); form.classList.remove("drag"); addFiles(event.dataTransfer.files); });
+$("#file-list").addEventListener("input", (event) => {
+  if (event.target.dataset.index) state.files[event.target.dataset.index].label = event.target.value;
+  if (event.target.dataset.number) state.files[event.target.dataset.number].number = event.target.value;
+  if (event.target.dataset.opening) state.files[event.target.dataset.opening].opening = event.target.value;
+});
+// Remember the name and other-account numbers in this browser only (a convenience; nothing is uploaded until Analyze).
+for (const id of ["owner-names", "other-accounts"]) {
+  const input = $("#" + id);
+  try { input.value = localStorage.getItem("expense-copilot:" + id) || ""; } catch { /* storage unavailable */ }
+  input.addEventListener("input", () => { try { localStorage.setItem("expense-copilot:" + id, input.value); } catch { /* ignore */ } });
+}
+try { if ($("#owner-names").value || $("#other-accounts").value) $("#own-details").open = true; } catch { /* ignore */ }
+$("#file-list").addEventListener("click", (event) => {
+  if (event.target.dataset.remove === undefined) return;
+  state.files.splice(Number(event.target.dataset.remove), 1);
+  renderFileList();
+});
+
+form.addEventListener("submit", (event) => { event.preventDefault(); analyzeFiles(); });
+
+async function requestReport() {
+  const body = new FormData();
+  for (const item of state.files) { body.append("statements", item.file); body.append("labels", item.label.trim()); body.append("account_numbers", item.number.trim()); body.append("opening_balances", item.opening.trim()); }
+  body.append("owner_names", $("#owner-names").value.trim());
+  body.append("other_accounts", $("#other-accounts").value.trim());
+  for (const id of state.excludedIds) body.append("excluded", id);
+  for (const id of state.includedIds) body.append("included", id);
+  const response = await fetch("/statements/analyze-many", { method: "POST", body });
+  const data = await response.json();
+  if (!response.ok) throw new Error(typeof data.detail === "string" ? data.detail : "The statements could not be analyzed.");
+  return data;
+}
+
+// Transactions above LARGE_AMOUNT the user should confirm (own-account transfers are already left out).
+const largeTransactions = (r) => r.transactions.filter((t) => Math.abs(num(t.amount)) > LARGE_AMOUNT && !t.internal_transfer);
+const sameSet = (a, b) => a.size === b.size && [...a].every((x) => b.has(x));
+
+/* Ask which large transactions to include. Resolves to the set of ids to leave out, or null if cancelled. */
+function reviewLarge(items) {
+  const dialog = $("#review"), table = $("#review-table");
+  $("#review-intro").textContent = `${plural(items.length, "transaction")} over ${money.format(LARGE_AMOUNT)}. Untick any you don't want in the analysis (for example a one-off property payment or a loan). They stay listed but are left out of every total and chart.`;
+  const showAccount = new Set(items.map((t) => t.account)).size > 1;
+  table.innerHTML = `<thead><tr><th>Include</th><th>Date</th><th>Description</th>${showAccount ? "<th>Account</th>" : ""}<th class="num">Money in</th><th class="num">Money out</th></tr></thead><tbody>` +
+    items.map((t) => {
+      const amount = num(t.amount), value = money.format(Math.abs(amount));
+      return `<tr class="${state.excludedIds.has(t.id) ? "out" : ""}">
+        <td><input type="checkbox" data-id="${esc(t.id)}" ${state.excludedIds.has(t.id) ? "" : "checked"} aria-label="Include ${esc(t.description)}"></td>
+        <td class="date">${esc(dateFmt.format(toDate(t.date)))}</td><td>${esc(t.description)}<span class="pair-note">${esc(t.category)}</span></td>
+        ${showAccount ? `<td class="place">${esc(t.account)}</td>` : ""}
+        <td class="num ${amount > 0 ? "credit" : ""}">${amount > 0 ? "+" + value : ""}</td><td class="num">${amount < 0 ? "−" + value : ""}</td></tr>`;
+    }).join("") + "</tbody>";
+  const boxes = () => [...table.querySelectorAll("input[data-id]")];
+  const summarize = () => {
+    for (const box of boxes()) box.closest("tr").classList.toggle("out", !box.checked);
+    const out = boxes().filter((box) => !box.checked).length;
+    $("#review-summary").textContent = out ? `${out} of ${items.length} will be left out` : `All ${items.length} included`;
+  };
+  table.onchange = summarize;
+  $("#review-all").onclick = () => { boxes().forEach((box) => { box.checked = true; }); summarize(); };
+  $("#review-none").onclick = () => { boxes().forEach((box) => { box.checked = false; }); summarize(); };
+  summarize();
+  return new Promise((resolve) => {
+    dialog.onclose = () => {
+      if (dialog.returnValue !== "ok") return resolve(null);
+      const ids = new Set(state.excludedIds);
+      for (const box of boxes()) { if (box.checked) ids.delete(box.dataset.id); else ids.add(box.dataset.id); }
+      resolve(ids);
+    };
+    dialog.returnValue = "";
+    dialog.showModal();
+    $("#review-ok").focus();
+  });
+}
+
+async function analyzeFiles({ review = true } = {}) {
+  const button = $("#analyze"), error = $("#error");
+  button.disabled = true; button.textContent = "Analyzing…"; error.hidden = true;
+  try {
+    let report = await requestReport();
+    const large = largeTransactions(report);
+    if (review && large.length) {
+      button.textContent = "Waiting for your choice…";
+      const choice = await reviewLarge(large);
+      if (!choice) return;  // cancelled: keep whatever was shown before
+      if (!sameSet(choice, state.excludedIds)) {
+        state.excludedIds = choice;
+        button.textContent = "Analyzing…";
+        report = await requestReport();
+      }
+    }
+    render(report);
+  } catch (err) {
+    error.textContent = err.message || "Something went wrong.";
+    error.hidden = false;
+  } finally {
+    button.disabled = !state.files.length; button.textContent = "Analyze";
+  }
+}
+
+/* ---------- count / leave out individual transactions ---------- */
+// Ticked = counted. Unticking a normal row leaves it out; ticking an own-account transfer counts it anyway.
+function setCounted(t, counted) {
+  if (counted) {
+    state.excludedIds.delete(t.id);
+    if (t.internal_transfer) state.includedIds.add(t.id);
+  } else if (t.user_included) {
+    state.includedIds.delete(t.id);  // back to being treated as an own-account transfer
+  } else if (!excluded(t)) {
+    state.excludedIds.add(t.id);
+  }
+}
+
+let refreshTimer, refreshing = Promise.resolve();
+function refreshSoon() {
+  // Several quick clicks become one re-analysis.
+  $("#tx-changes").textContent = "Updating…";
+  clearTimeout(refreshTimer);
+  refreshTimer = setTimeout(() => {
+    const scroll = scrollY;
+    refreshing = refreshing.then(async () => {
+      try { render(await requestReport(), { keepView: true }); scrollTo(0, scroll); }
+      catch (err) { $("#error").textContent = err.message; $("#error").hidden = false; }
+    });
+  }, 350);
+}
+
+$("#tx-table").addEventListener("change", (event) => {
+  const id = event.target.dataset.toggle;
+  const t = id && state.report.transactions.find((item) => item.id === id);
+  if (!t) return;
+  setCounted(t, event.target.checked);
+  event.target.closest("tr").classList.toggle("left-out", !event.target.checked);
+  refreshSoon();
+});
+$("#count-shown").addEventListener("click", () => { (state.shownRows || []).forEach((t) => setCounted(t, true)); refreshSoon(); });
+$("#leave-shown").addEventListener("click", () => { (state.shownRows || []).forEach((t) => setCounted(t, false)); refreshSoon(); });
+$("#tx-changes").addEventListener("click", (event) => {
+  if (event.target.id !== "reset-choices") return;
+  state.excludedIds.clear();
+  state.includedIds.clear();
+  refreshSoon();
+});
+
+// Change the large-transaction choices after seeing the results.
+$("#review-large").addEventListener("click", async () => {
+  const large = largeTransactions(state.report);
+  const choice = await reviewLarge(large);
+  if (!choice || sameSet(choice, state.excludedIds)) return;
+  state.excludedIds = choice;
+  const scroll = scrollY;
+  try { render(await requestReport(), { keepView: true }); scrollTo(0, scroll); }
+  catch (err) { $("#error").textContent = err.message; $("#error").hidden = false; }
+});
+
+$("#filter-account").addEventListener("change", (event) => setFilters({ account: event.target.value }, false));
+$("#filter-category").addEventListener("change", (event) => setFilters({ category: event.target.value }, false));
+$("#filter-location").addEventListener("change", (event) => setFilters({ location: event.target.value }, false));
+$("#date-tabs").addEventListener("click", (event) => {
+  if (!event.target.dataset.level) return;
+  state.dateLevel = event.target.dataset.level;
+  setFilters({ dateRange: null }, false);
+});
+$("#date-chip").addEventListener("click", () => setFilters({ dateRange: null }, false));
+$("#filter-direction").addEventListener("change", (event) => { state.direction = event.target.value; renderTransactions(state.report); });
+$("#sort-order").addEventListener("change", (event) => { state.sortOrder = event.target.value; renderTransactions(state.report); });
+$("#location-tabs").addEventListener("click", (event) => {
+  if (!event.target.dataset.level) return;
+  state.locationLevel = event.target.dataset.level;
+  renderLocations(state.report);
+});
+
+// Redraw charts when the report's width changes (window resize, pane shown after being hidden).
+let resizeTimer, lastWidth = 0;
+new ResizeObserver(([entry]) => {
+  const width = Math.round(entry.contentRect.width);
+  if (width === lastWidth) return;
+  lastWidth = width;
+  clearTimeout(resizeTimer);
+  resizeTimer = setTimeout(renderCharts, 120);
+}).observe($("#report"));
+</script>
+</body>
+</html>

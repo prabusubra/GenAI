@@ -1,0 +1,168 @@
+# Places Expense Copilot looks for in transaction descriptions (offline, nothing is sent anywhere).
+# name: as it appears in narrations; aliases: other spellings separated by |
+# level: city, town, or village. District and state are used for the location breakdown.
+# Add your own towns and villages at the bottom - more specific levels win (village > town > city).
+name,aliases,level,district,state
+Delhi,New Delhi,city,New Delhi,Delhi
+Gurugram,Gurgaon,city,Gurugram,Haryana
+Faridabad,,city,Faridabad,Haryana
+Panipat,,city,Panipat,Haryana
+Sonipat,,city,Sonipat,Haryana
+Karnal,,city,Karnal,Haryana
+Ambala,,city,Ambala,Haryana
+Hisar,,city,Hisar,Haryana
+Rohtak,,city,Rohtak,Haryana
+Noida,,city,Gautam Buddh Nagar,Uttar Pradesh
+Greater Noida,,city,Gautam Buddh Nagar,Uttar Pradesh
+Ghaziabad,,city,Ghaziabad,Uttar Pradesh
+Lucknow,,city,Lucknow,Uttar Pradesh
+Kanpur,,city,Kanpur Nagar,Uttar Pradesh
+Agra,,city,Agra,Uttar Pradesh
+Mathura,,city,Mathura,Uttar Pradesh
+Aligarh,,city,Aligarh,Uttar Pradesh
+Meerut,,city,Meerut,Uttar Pradesh
+Varanasi,Banaras|Benares,city,Varanasi,Uttar Pradesh
+Prayagraj,Allahabad,city,Prayagraj,Uttar Pradesh
+Bareilly,,city,Bareilly,Uttar Pradesh
+Moradabad,,city,Moradabad,Uttar Pradesh
+Gorakhpur,,city,Gorakhpur,Uttar Pradesh
+Jhansi,,city,Jhansi,Uttar Pradesh
+Dehradun,,city,Dehradun,Uttarakhand
+Haridwar,,city,Haridwar,Uttarakhand
+Rishikesh,,town,Dehradun,Uttarakhand
+Nainital,,town,Nainital,Uttarakhand
+Haldwani,,city,Nainital,Uttarakhand
+Shimla,,city,Shimla,Himachal Pradesh
+Manali,,town,Kullu,Himachal Pradesh
+Dharamshala,,town,Kangra,Himachal Pradesh
+Chandigarh,,city,Chandigarh,Chandigarh
+Mohali,,city,SAS Nagar,Punjab
+Ludhiana,,city,Ludhiana,Punjab
+Amritsar,,city,Amritsar,Punjab
+Jalandhar,,city,Jalandhar,Punjab
+Patiala,,city,Patiala,Punjab
+Bathinda,,city,Bathinda,Punjab
+Jammu,,city,Jammu,Jammu and Kashmir
+Srinagar,,city,Srinagar,Jammu and Kashmir
+Jaipur,,city,Jaipur,Rajasthan
+Jodhpur,,city,Jodhpur,Rajasthan
+Udaipur,,city,Udaipur,Rajasthan
+Ajmer,,city,Ajmer,Rajasthan
+Bikaner,,city,Bikaner,Rajasthan
+Kota,,city,Kota,Rajasthan
+Alwar,,city,Alwar,Rajasthan
+Ahmedabad,Amdavad,city,Ahmedabad,Gujarat
+Gandhinagar,,city,Gandhinagar,Gujarat
+Surat,,city,Surat,Gujarat
+Vadodara,Baroda,city,Vadodara,Gujarat
+Rajkot,,city,Rajkot,Gujarat
+Bhavnagar,,city,Bhavnagar,Gujarat
+Jamnagar,,city,Jamnagar,Gujarat
+Mumbai,Bombay,city,Mumbai,Maharashtra
+Navi Mumbai,,city,Thane,Maharashtra
+Thane,,city,Thane,Maharashtra
+Pune,Poona,city,Pune,Maharashtra
+Nagpur,,city,Nagpur,Maharashtra
+Nashik,Nasik,city,Nashik,Maharashtra
+Aurangabad,Chhatrapati Sambhajinagar,city,Aurangabad,Maharashtra
+Solapur,,city,Solapur,Maharashtra
+Kolhapur,,city,Kolhapur,Maharashtra
+Amravati,,city,Amravati,Maharashtra
+Nanded,,city,Nanded,Maharashtra
+Sangli,,city,Sangli,Maharashtra
+Satara,,city,Satara,Maharashtra
+Ahmednagar,Ahilyanagar,city,Ahmednagar,Maharashtra
+Latur,,city,Latur,Maharashtra
+Akola,,city,Akola,Maharashtra
+Jalgaon,,city,Jalgaon,Maharashtra
+Panaji,Panjim,city,North Goa,Goa
+Margao,Madgaon,city,South Goa,Goa
+Indore,,city,Indore,Madhya Pradesh
+Bhopal,,city,Bhopal,Madhya Pradesh
+Jabalpur,,city,Jabalpur,Madhya Pradesh
+Gwalior,,city,Gwalior,Madhya Pradesh
+Ujjain,,city,Ujjain,Madhya Pradesh
+Raipur,,city,Raipur,Chhattisgarh
+Bilaspur,,city,Bilaspur,Chhattisgarh
+Bhilai,,city,Durg,Chhattisgarh
+Hyderabad,,city,Hyderabad,Telangana
+Secunderabad,,city,Hyderabad,Telangana
+Warangal,,city,Warangal,Telangana
+Karimnagar,,city,Karimnagar,Telangana
+Nizamabad,,city,Nizamabad,Telangana
+Visakhapatnam,Vizag,city,Visakhapatnam,Andhra Pradesh
+Vijayawada,,city,NTR,Andhra Pradesh
+Guntur,,city,Guntur,Andhra Pradesh
+Nellore,,city,Nellore,Andhra Pradesh
+Tirupati,,city,Tirupati,Andhra Pradesh
+Kurnool,,city,Kurnool,Andhra Pradesh
+Kakinada,,city,Kakinada,Andhra Pradesh
+Rajahmundry,Rajamahendravaram,city,East Godavari,Andhra Pradesh
+Anantapur,Anantapuramu,city,Anantapur,Andhra Pradesh
+Bengaluru,Bangalore|Blr,city,Bengaluru Urban,Karnataka
+Mysuru,Mysore,city,Mysuru,Karnataka
+Mangaluru,Mangalore,city,Dakshina Kannada,Karnataka
+Hubballi,Hubli,city,Dharwad,Karnataka
+Dharwad,,city,Dharwad,Karnataka
+Belagavi,Belgaum,city,Belagavi,Karnataka
+Kalaburagi,Gulbarga,city,Kalaburagi,Karnataka
+Davangere,Davanagere,city,Davanagere,Karnataka
+Ballari,Bellary,city,Ballari,Karnataka
+Shivamogga,Shimoga,city,Shivamogga,Karnataka
+Tumakuru,Tumkur,city,Tumakuru,Karnataka
+Udupi,,city,Udupi,Karnataka
+Mandya,,city,Mandya,Karnataka
+Hassan,,city,Hassan,Karnataka
+Chennai,Madras,city,Chennai,Tamil Nadu
+Coimbatore,Kovai,city,Coimbatore,Tamil Nadu
+Madurai,,city,Madurai,Tamil Nadu
+Tiruchirappalli,Trichy|Tiruchi,city,Tiruchirappalli,Tamil Nadu
+Salem,,city,Salem,Tamil Nadu
+Tirunelveli,,city,Tirunelveli,Tamil Nadu
+Erode,,city,Erode,Tamil Nadu
+Vellore,,city,Vellore,Tamil Nadu
+Thoothukudi,Tuticorin,city,Thoothukudi,Tamil Nadu
+Hosur,,city,Krishnagiri,Tamil Nadu
+Kanchipuram,Kanchi,city,Kanchipuram,Tamil Nadu
+Ooty,Udhagamandalam,town,Nilgiris,Tamil Nadu
+Puducherry,Pondicherry|Pondy,city,Puducherry,Puducherry
+Thiruvananthapuram,Trivandrum,city,Thiruvananthapuram,Kerala
+Kochi,Cochin|Ernakulam,city,Ernakulam,Kerala
+Kozhikode,Calicut,city,Kozhikode,Kerala
+Thrissur,Trichur,city,Thrissur,Kerala
+Kollam,Quilon,city,Kollam,Kerala
+Kannur,Cannanore,city,Kannur,Kerala
+Palakkad,Palghat,city,Palakkad,Kerala
+Alappuzha,Alleppey,city,Alappuzha,Kerala
+Kottayam,,city,Kottayam,Kerala
+Kolkata,Calcutta,city,Kolkata,West Bengal
+Howrah,,city,Howrah,West Bengal
+Siliguri,,city,Darjeeling,West Bengal
+Durgapur,,city,Paschim Bardhaman,West Bengal
+Asansol,,city,Paschim Bardhaman,West Bengal
+Darjeeling,,town,Darjeeling,West Bengal
+Patna,,city,Patna,Bihar
+Muzaffarpur,,city,Muzaffarpur,Bihar
+Bhagalpur,,city,Bhagalpur,Bihar
+Darbhanga,,city,Darbhanga,Bihar
+Ranchi,,city,Ranchi,Jharkhand
+Jamshedpur,,city,East Singhbhum,Jharkhand
+Dhanbad,,city,Dhanbad,Jharkhand
+Bokaro,,city,Bokaro,Jharkhand
+Bhubaneswar,,city,Khordha,Odisha
+Cuttack,,city,Cuttack,Odisha
+Rourkela,,city,Sundargarh,Odisha
+Guwahati,Gauhati,city,Kamrup Metropolitan,Assam
+Shillong,,city,East Khasi Hills,Meghalaya
+Imphal,,city,Imphal West,Manipur
+Agartala,,city,West Tripura,Tripura
+Aizawl,,city,Aizawl,Mizoram
+Kohima,,city,Kohima,Nagaland
+Itanagar,,city,Papum Pare,Arunachal Pradesh
+Gangtok,,city,Gangtok,Sikkim
+Port Blair,Sri Vijaya Puram,city,South Andaman,Andaman and Nicobar Islands
+# --- Towns and villages: add your own below (name,aliases,level,district,state) ---
+Melukote,Melkote,town,Mandya,Karnataka
+Hiware Bazar,Hivare Bazar,village,Ahmednagar,Maharashtra
+Mawlynnong,,village,East Khasi Hills,Meghalaya
+Punsari,,village,Sabarkantha,Gujarat

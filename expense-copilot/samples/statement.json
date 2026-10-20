@@ -1,0 +1,200 @@
+{
+  "transactions": [
+    {
+      "date": "2026-09-01",
+      "description": "SALARY CREDIT ACME TECHNOLOGIES",
+      "amount": "85000.00",
+      "type": "credit",
+      "currency": "INR"
+    },
+    {
+      "date": "2026-09-01",
+      "description": "RENT TRANSFER TO LANDLORD NEFT",
+      "amount": "22000.00",
+      "type": "debit",
+      "currency": "INR"
+    },
+    {
+      "date": "2026-09-02",
+      "description": "BIGBASKET ORDER 88213",
+      "amount": "2340.50",
+      "type": "debit",
+      "currency": "INR"
+    },
+    {
+      "date": "2026-09-03",
+      "description": "SWIGGY FOOD ORDER BENGALURU",
+      "amount": "486.00",
+      "type": "debit",
+      "currency": "INR"
+    },
+    {
+      "date": "2026-09-04",
+      "description": "UBER INDIA TRIP BANGALORE KA",
+      "amount": "312.75",
+      "type": "debit",
+      "currency": "INR"
+    },
+    {
+      "date": "2026-09-05",
+      "description": "AIRTEL MOBILE RECHARGE",
+      "amount": "599.00",
+      "type": "debit",
+      "currency": "INR"
+    },
+    {
+      "date": "2026-09-05",
+      "description": "UPI TO SELF ACCOUNT SAMPLE COOP BANK",
+      "amount": "10000.00",
+      "type": "debit",
+      "currency": "INR"
+    },
+    {
+      "date": "2026-09-06",
+      "description": "NETFLIX SUBSCRIPTION",
+      "amount": "649.00",
+      "type": "debit",
+      "currency": "INR"
+    },
+    {
+      "date": "2026-09-07",
+      "description": "AMAZON PAY SHOPPING",
+      "amount": "3899.00",
+      "type": "debit",
+      "currency": "INR"
+    },
+    {
+      "date": "2026-09-08",
+      "description": "ATM CASH WITHDRAWAL MG ROAD BENGALURU",
+      "amount": "5000.00",
+      "type": "debit",
+      "currency": "INR"
+    },
+    {
+      "date": "2026-09-09",
+      "description": "APOLLO PHARMACY MYSURU",
+      "amount": "742.30",
+      "type": "debit",
+      "currency": "INR"
+    },
+    {
+      "date": "2026-09-10",
+      "description": "BESCOM ELECTRICITY BILL",
+      "amount": "1860.00",
+      "type": "debit",
+      "currency": "INR"
+    },
+    {
+      "date": "2026-09-11",
+      "description": "THIRD WAVE COFFEE PUNE MH",
+      "amount": "410.00",
+      "type": "debit",
+      "currency": "INR"
+    },
+    {
+      "date": "2026-09-12",
+      "description": "HP PETROL PUMP FUEL HOSUR TN",
+      "amount": "2500.00",
+      "type": "debit",
+      "currency": "INR"
+    },
+    {
+      "date": "2026-09-13",
+      "description": "DMART SUPERMARKET CHENNAI",
+      "amount": "4120.80",
+      "type": "debit",
+      "currency": "INR"
+    },
+    {
+      "date": "2026-09-14",
+      "description": "PVR CINEMA TICKETS KOCHI",
+      "amount": "760.00",
+      "type": "debit",
+      "currency": "INR"
+    },
+    {
+      "date": "2026-09-15",
+      "description": "UPI TO RAVI KUMAR",
+      "amount": "1500.00",
+      "type": "debit",
+      "currency": "INR"
+    },
+    {
+      "date": "2026-09-16",
+      "description": "FLIPKART REFUND",
+      "amount": "1299.00",
+      "type": "credit",
+      "currency": "INR"
+    },
+    {
+      "date": "2026-09-17",
+      "description": "ZOMATO ORDER BENGALURU",
+      "amount": "638.00",
+      "type": "debit",
+      "currency": "INR"
+    },
+    {
+      "date": "2026-09-18",
+      "description": "ACT FIBERNET INTERNET BILL",
+      "amount": "1178.82",
+      "type": "debit",
+      "currency": "INR"
+    },
+    {
+      "date": "2026-09-19",
+      "description": "METRO CARD TOP UP",
+      "amount": "500.00",
+      "type": "debit",
+      "currency": "INR"
+    },
+    {
+      "date": "2026-09-20",
+      "description": "CULT FIT MEMBERSHIP",
+      "amount": "2499.00",
+      "type": "debit",
+      "currency": "INR"
+    },
+    {
+      "date": "2026-09-21",
+      "description": "MELUKOTE TEMPLE STORE MANDYA",
+      "amount": "350.00",
+      "type": "debit",
+      "currency": "INR"
+    },
+    {
+      "date": "2026-09-22",
+      "description": "STAR HEALTH INSURANCE PREMIUM",
+      "amount": "1850.00",
+      "type": "debit",
+      "currency": "INR"
+    },
+    {
+      "date": "2026-09-24",
+      "description": "MYNTRA FASHION",
+      "amount": "2199.00",
+      "type": "debit",
+      "currency": "INR"
+    },
+    {
+      "date": "2026-09-26",
+      "description": "SPOTIFY PREMIUM",
+      "amount": "119.00",
+      "type": "debit",
+      "currency": "INR"
+    },
+    {
+      "date": "2026-09-28",
+      "description": "CITY CLINIC CONSULTATION MYSORE",
+      "amount": "800.00",
+      "type": "debit",
+      "currency": "INR"
+    },
+    {
+      "date": "2026-09-30",
+      "description": "SAVINGS INTEREST",
+      "amount": "212.40",
+      "type": "credit",
+      "currency": "INR"
+    }
+  ]
+}
